@@ -39,7 +39,7 @@ pub fn dfs_from_node(g: &mut Graph, v: i32) -> i32 {
 	if g.contains_node(v) {
 		let mut seen: HashSet<i32> = HashSet::new();
 		// print!("{:?}: ", v);
-		let mut visited: i32 = dfs_visit(g, v, &mut seen);
+		let visited: i32 = dfs_visit(g, v, &mut seen);
 		// print!(" - {:?}", visited);
 		// println!();
 		return visited;
