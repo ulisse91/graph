@@ -29,6 +29,24 @@ impl Node {
 		self.in_neigh_degree+=1;
 	}
 
+	pub fn remove_out(&mut self, _id: i32) {
+		let mut i=0;
+		while self.out_neigh[i] != _id {
+			i+=1;
+		}
+		self.out_neigh.remove(i);
+		self.out_neigh_degree-=1;
+	}
+
+	pub fn remove_in(&mut self, _id: i32) {
+		let mut i=0;
+		while self.in_neigh[i] != _id {
+			i+=1;
+		}
+		self.in_neigh.remove(i);
+		self.in_neigh_degree-=1;
+	}
+
 	pub fn out_neigh(&mut self) -> Vec<i32> {
 		return self.out_neigh.clone();
 	}
@@ -112,6 +130,31 @@ impl Graph {
 		return true;
 	}
 
+	pub fn remove_edge(&mut self, _id1: i32, _id2: i32) -> bool {
+		if !self.contains_node(_id1) || !self.contains_node(_id2) {
+			return false;
+		}
+
+		if !self.contains_edge(_id1, _id2) {
+			return false;
+		}
+
+		if let Some(x) = self.nodes.get_mut(&_id1) {
+		    x.remove_out(_id2);
+		}
+
+		if let Some(x) = self.nodes.get_mut(&_id2) {
+		    x.remove_in(_id1);
+		}
+
+
+		//finishing...
+		self.edge_count-=1;
+
+		return true;
+
+	}
+
 	pub fn nodes(&mut self) -> HashMap<i32, Node> {
 		return self.nodes.clone();
 	}
@@ -162,7 +205,7 @@ mod tests {
 	use super::*;
 
     #[test]
-	fn test1() {
+	fn add_node_contains_node() {
 		let mut g = Graph::new();
 		assert_eq!(g.node_count(), 0);
 		assert_eq!(g.new_node(0), true);
@@ -178,7 +221,7 @@ mod tests {
 	}
 
 	#[test]
-	fn test2() {
+	fn add_edges_contains_edges() {
 		let mut g = Graph::new();
 		assert_eq!(g.new_node(0), true);
 		assert_eq!(g.new_node(1), true);
@@ -189,5 +232,20 @@ mod tests {
 		assert_eq!(g.add_edge(0, 3), true);
 		assert_eq!(g.contains_edge(0,1), true);
 		assert_eq!(g.contains_edge(1, 0), false);
+	}
+
+	#[test]
+	fn remove_edges() {
+		let mut g = Graph::new();
+		assert_eq!(g.new_node(0), true);
+		assert_eq!(g.new_node(1), true);
+		assert_eq!(g.new_node(2), true);
+		assert_eq!(g.add_edge(0, 1), true);
+		assert_eq!(g.add_edge(0, 2), true);
+		assert_eq!(g.contains_edge(0, 1), true);
+		assert_eq!(g.contains_edge(0, 2), true);
+		assert_eq!(g.remove_edge(0,3), false);
+		assert_eq!(g.remove_edge(1,2), false);
+		assert_eq!(g.remove_edge(0,1), true);
 	}
 }
