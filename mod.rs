@@ -123,7 +123,6 @@ impl Graph {
 		    x.insert_in(_id1);
 		}
 
-
 		//finishing...
 		self.edge_count+=1;
 
@@ -183,6 +182,21 @@ impl Graph {
 			} println!("");
 		}
 	}
+
+	pub fn inverse_graph(&mut self) -> Graph {
+		let mut inverse_g = Graph::new();
+		let list_nodes = self.nodes();
+		for x in list_nodes {
+			let mut current_node: Node = x.1.clone();
+			inverse_g.new_node(x.0);
+			for neigh in current_node.out_neigh() {
+				inverse_g.new_node(self.node(neigh).id);
+				inverse_g.add_edge(neigh, current_node.id);
+			}
+		}
+		return inverse_g;
+	}
+
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -247,5 +261,38 @@ mod tests {
 		assert_eq!(g.remove_edge(0,3), false);
 		assert_eq!(g.remove_edge(1,2), false);
 		assert_eq!(g.remove_edge(0,1), true);
+		assert_eq!(g.contains_edge(0, 1), false);
+	}
+
+	#[test]
+	fn inverse_graph() {
+		let mut g = Graph::new();
+		assert_eq!(g.new_node(1), true);
+		assert_eq!(g.new_node(2), true);
+		assert_eq!(g.new_node(3), true);
+		assert_eq!(g.new_node(4), true);
+
+		assert_eq!(g.add_edge(1, 2), true);
+		assert_eq!(g.add_edge(1, 3), true);
+		assert_eq!(g.add_edge(2, 4), true);
+		assert_eq!(g.add_edge(3, 1), true);
+		assert_eq!(g.add_edge(3, 4), true);
+		assert_eq!(g.add_edge(4, 2), true);
+
+		let mut inverse_g: Graph = g.inverse_graph();
+
+		assert_eq!(g.node_count(), inverse_g.node_count());
+		assert_eq!(g.edge_count(), inverse_g.edge_count());
+
+
+		assert_eq!(inverse_g.contains_edge(2, 1), true);
+		assert_eq!(inverse_g.contains_edge(3, 1), true);
+		assert_eq!(inverse_g.contains_edge(4, 2), true);
+		assert_eq!(inverse_g.contains_edge(1, 3), true);
+		assert_eq!(inverse_g.contains_edge(4, 3), true);
+		assert_eq!(inverse_g.contains_edge(2, 4), true);
+
+		assert_eq!(inverse_g.contains_edge(1, 2), false);
+		assert_eq!(inverse_g.contains_edge(3, 4), false);
 	}
 }
