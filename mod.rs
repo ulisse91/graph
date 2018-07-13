@@ -197,6 +197,25 @@ impl Graph {
 		return inverse_g;
 	}
 
+	pub fn remove_node(&mut self, id: i32) -> bool {
+		if !self.contains_node(id) {
+			return false;
+		}
+
+		for neigh in self.node(id).out_neigh() {
+			self.remove_edge(id, neigh);
+		}
+
+		for neigh in self.node(id).in_neigh() {
+			self.remove_edge(neigh, id);
+		}
+
+		self.nodes.remove(&id);
+		self.node_count-=1;
+
+		return true;
+	}
+
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -271,28 +290,45 @@ mod tests {
 		assert_eq!(g.new_node(2), true);
 		assert_eq!(g.new_node(3), true);
 		assert_eq!(g.new_node(4), true);
-
 		assert_eq!(g.add_edge(1, 2), true);
 		assert_eq!(g.add_edge(1, 3), true);
 		assert_eq!(g.add_edge(2, 4), true);
 		assert_eq!(g.add_edge(3, 1), true);
 		assert_eq!(g.add_edge(3, 4), true);
 		assert_eq!(g.add_edge(4, 2), true);
-
 		let mut inverse_g: Graph = g.inverse_graph();
-
 		assert_eq!(g.node_count(), inverse_g.node_count());
 		assert_eq!(g.edge_count(), inverse_g.edge_count());
-
-
 		assert_eq!(inverse_g.contains_edge(2, 1), true);
 		assert_eq!(inverse_g.contains_edge(3, 1), true);
 		assert_eq!(inverse_g.contains_edge(4, 2), true);
 		assert_eq!(inverse_g.contains_edge(1, 3), true);
 		assert_eq!(inverse_g.contains_edge(4, 3), true);
 		assert_eq!(inverse_g.contains_edge(2, 4), true);
-
 		assert_eq!(inverse_g.contains_edge(1, 2), false);
 		assert_eq!(inverse_g.contains_edge(3, 4), false);
+	}
+
+	#[test]
+	fn remove_node() {
+		let mut g = Graph::new();
+		assert_eq!(g.new_node(1), true);
+		assert_eq!(g.new_node(2), true);
+		assert_eq!(g.new_node(3), true);
+		assert_eq!(g.new_node(4), true);
+		assert_eq!(g.add_edge(1, 2), true);
+		assert_eq!(g.add_edge(1, 3), true);
+		assert_eq!(g.add_edge(2, 4), true);
+		assert_eq!(g.add_edge(3, 1), true);
+		assert_eq!(g.add_edge(3, 4), true);
+		assert_eq!(g.add_edge(4, 2), true);
+		assert_eq!(g.remove_node(5), false);
+		assert_eq!(g.remove_node(1), true);
+		assert_eq!(g.contains_node(1), false);
+		assert_eq!(g.node_count(), 3);
+		assert_eq!(g.edge_count(), 3);
+		assert_eq!(g.contains_edge(1, 3), false);
+		assert_eq!(g.contains_edge(3, 1), false);
+		assert_eq!(g.contains_edge(1, 2), false);
 	}
 }
