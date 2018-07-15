@@ -11,9 +11,9 @@ fn dfs_visit(g: &mut Graph, v: i32, seen: &mut HashSet<i32>) -> i32 {
 	seen.insert(v);
 
 	for neigh_t in g.node(v).out_neigh() {
-	    if !seen.contains(&neigh_t) {
+	    if !seen.contains(&neigh_t.0) {
 	    	// print!("{:?} ", neigh_t);
-	        visited += dfs_visit(g, neigh_t, seen);
+	        visited += dfs_visit(g, neigh_t.0, seen);
 	    }
 	}
 	// print!("| ");

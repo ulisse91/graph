@@ -12,55 +12,51 @@ pub struct Graph {
 #[derive(Clone)]
 pub struct Node {
 	id: i32,
-	out_neigh: Vec<i32>,
-	in_neigh: Vec<i32>,
-	out_neigh_degree: i32,
-	in_neigh_degree: i32
+	out_neigh: Vec<(i32, f64)>,
+	in_neigh: Vec<(i32, f64)>,
+	// out_neigh: Vec<i32>,
+	// in_neigh: Vec<i32>,
 }
 
 impl Node {
-	pub fn insert_out(&mut self, _id: i32) {
-		self.out_neigh.push(_id);
-		self.out_neigh_degree+=1;
+	pub fn insert_out(&mut self, _edge: (i32, f64)) {
+		self.out_neigh.push(_edge);
 	}
 
-	pub fn insert_in(&mut self, _id: i32) {
-		self.in_neigh.push(_id);
-		self.in_neigh_degree+=1;
+	pub fn insert_in(&mut self, _edge: (i32, f64)) {
+		self.in_neigh.push(_edge);
 	}
 
 	pub fn remove_out(&mut self, _id: i32) {
 		let mut i=0;
-		while self.out_neigh[i] != _id {
+		while self.out_neigh[i].0 != _id {
 			i+=1;
 		}
 		self.out_neigh.remove(i);
-		self.out_neigh_degree-=1;
 	}
 
 	pub fn remove_in(&mut self, _id: i32) {
 		let mut i=0;
-		while self.in_neigh[i] != _id {
+		while self.in_neigh[i].0 != _id {
 			i+=1;
 		}
 		self.in_neigh.remove(i);
-		self.in_neigh_degree-=1;
 	}
 
-	pub fn out_neigh(&mut self) -> Vec<i32> {
+	pub fn out_neigh(&mut self) -> Vec<(i32, f64)> {
 		return self.out_neigh.clone();
 	}
 
-	pub fn in_neigh(&mut self) -> Vec<i32> {
+	pub fn in_neigh(&mut self) -> Vec<(i32, f64)> {
 		return self.in_neigh.clone();
 	}
 
-	pub fn out_neigh_degree(&mut self) -> i32 {
-		return self.out_neigh_degree;
+	pub fn out_neigh_degree(&mut self) -> usize {
+		return self.out_neigh.len();
 	}
 
-	pub fn in_neigh_degree(&mut self) -> i32 {
-		return self.in_neigh_degree;
+	pub fn in_neigh_degree(&mut self) -> usize {
+		return self.in_neigh.len();
 	}
 
 	pub fn id(&mut self) -> i32 {
@@ -85,9 +81,7 @@ impl Graph {
 		let _node = Node { 
         	id: _id,
 			out_neigh: Vec::new(),
-			in_neigh: Vec::new(),
-			out_neigh_degree: 0,
-			in_neigh_degree: 0
+			in_neigh: Vec::new()
          };
          self.nodes.insert(_id, _node);
          self.node_count+=1;
@@ -106,7 +100,7 @@ impl Graph {
 		return self.nodes.contains_key(&_id);		
 	}
 
-	pub fn add_edge(&mut self, _id1: i32, _id2: i32) -> bool {
+	pub fn add_edge(&mut self, _id1: i32, _id2: i32, _weight: f64) -> bool {
 		if !self.contains_node(_id1) || !self.contains_node(_id2) {
 			return false;
 		}
@@ -116,11 +110,11 @@ impl Graph {
 		}
 
 		if let Some(x) = self.nodes.get_mut(&_id1) {
-		    x.insert_out(_id2);
+		    x.insert_out((_id2, _weight));
 		}
 
 		if let Some(x) = self.nodes.get_mut(&_id2) {
-		    x.insert_in(_id1);
+		    x.insert_in((_id1, _weight));
 		}
 
 		//finishing...
@@ -167,7 +161,7 @@ impl Graph {
 			return false;
 		}
 		for _neig in self.node(_id1).out_neigh() {
-			if _neig == _id2 {
+			if _neig.0 == _id2 {
 				return true;
 			}
 		}
@@ -178,7 +172,7 @@ impl Graph {
 		for tt in self.nodes().values() {
 			print!("{:?}: ", tt.id);
 			for aa in tt.clone().out_neigh() {
-				print!("{:?} ", self.node(aa).id);
+				print!("{:?} ", self.node(aa.0).id);
 			} println!("");
 		}
 	}
@@ -190,8 +184,8 @@ impl Graph {
 			let mut current_node: Node = x.1.clone();
 			inverse_g.new_node(x.0);
 			for neigh in current_node.out_neigh() {
-				inverse_g.new_node(self.node(neigh).id);
-				inverse_g.add_edge(neigh, current_node.id);
+				inverse_g.new_node(self.node(neigh.0).id);
+				inverse_g.add_edge(neigh.0, current_node.id, neigh.1);
 			}
 		}
 		return inverse_g;
@@ -203,11 +197,11 @@ impl Graph {
 		}
 
 		for neigh in self.node(id).out_neigh() {
-			self.remove_edge(id, neigh);
+			self.remove_edge(id, neigh.0);
 		}
 
 		for neigh in self.node(id).in_neigh() {
-			self.remove_edge(neigh, id);
+			self.remove_edge(neigh.0, id);
 		}
 
 		self.nodes.remove(&id);
@@ -247,10 +241,10 @@ mod tests {
 		assert_eq!(g.node_count(), 1);
 		assert_eq!(g.contains_node(0), true);
 		assert_eq!(g.contains_node(1), false);
-		assert_eq!(g.add_edge(0, 1), false);
+		assert_eq!(g.add_edge(0, 1, 1.0), false);
 		assert_eq!(g.new_node(1), true);
 		assert_eq!(g.contains_node(1), true);
-		assert_eq!(g.add_edge(0, 1), true);
+		assert_eq!(g.add_edge(0, 1, 1.0), true);
 	}
 
 	#[test]
@@ -260,9 +254,9 @@ mod tests {
 		assert_eq!(g.new_node(1), true);
 		assert_eq!(g.new_node(2), true);
 		assert_eq!(g.new_node(3), true);
-		assert_eq!(g.add_edge(0, 1), true);
-		assert_eq!(g.add_edge(0, 2), true);
-		assert_eq!(g.add_edge(0, 3), true);
+		assert_eq!(g.add_edge(0, 1, 1.0), true);
+		assert_eq!(g.add_edge(0, 2, 1.0), true);
+		assert_eq!(g.add_edge(0, 3, 1.0), true);
 		assert_eq!(g.contains_edge(0,1), true);
 		assert_eq!(g.contains_edge(1, 0), false);
 	}
@@ -273,8 +267,8 @@ mod tests {
 		assert_eq!(g.new_node(0), true);
 		assert_eq!(g.new_node(1), true);
 		assert_eq!(g.new_node(2), true);
-		assert_eq!(g.add_edge(0, 1), true);
-		assert_eq!(g.add_edge(0, 2), true);
+		assert_eq!(g.add_edge(0, 1, 1.0), true);
+		assert_eq!(g.add_edge(0, 2, 1.0), true);
 		assert_eq!(g.contains_edge(0, 1), true);
 		assert_eq!(g.contains_edge(0, 2), true);
 		assert_eq!(g.remove_edge(0,3), false);
@@ -290,12 +284,12 @@ mod tests {
 		assert_eq!(g.new_node(2), true);
 		assert_eq!(g.new_node(3), true);
 		assert_eq!(g.new_node(4), true);
-		assert_eq!(g.add_edge(1, 2), true);
-		assert_eq!(g.add_edge(1, 3), true);
-		assert_eq!(g.add_edge(2, 4), true);
-		assert_eq!(g.add_edge(3, 1), true);
-		assert_eq!(g.add_edge(3, 4), true);
-		assert_eq!(g.add_edge(4, 2), true);
+		assert_eq!(g.add_edge(1, 2, 1.0), true);
+		assert_eq!(g.add_edge(1, 3, 1.0), true);
+		assert_eq!(g.add_edge(2, 4, 1.0), true);
+		assert_eq!(g.add_edge(3, 1, 1.0), true);
+		assert_eq!(g.add_edge(3, 4, 1.0), true);
+		assert_eq!(g.add_edge(4, 2, 1.0), true);
 		let mut inverse_g: Graph = g.inverse_graph();
 		assert_eq!(g.node_count(), inverse_g.node_count());
 		assert_eq!(g.edge_count(), inverse_g.edge_count());
@@ -316,12 +310,12 @@ mod tests {
 		assert_eq!(g.new_node(2), true);
 		assert_eq!(g.new_node(3), true);
 		assert_eq!(g.new_node(4), true);
-		assert_eq!(g.add_edge(1, 2), true);
-		assert_eq!(g.add_edge(1, 3), true);
-		assert_eq!(g.add_edge(2, 4), true);
-		assert_eq!(g.add_edge(3, 1), true);
-		assert_eq!(g.add_edge(3, 4), true);
-		assert_eq!(g.add_edge(4, 2), true);
+		assert_eq!(g.add_edge(1, 2, 1.0), true);
+		assert_eq!(g.add_edge(1, 3, 1.0), true);
+		assert_eq!(g.add_edge(2, 4, 1.0), true);
+		assert_eq!(g.add_edge(3, 1, 1.0), true);
+		assert_eq!(g.add_edge(3, 4, 1.0), true);
+		assert_eq!(g.add_edge(4, 2, 1.0), true);
 		assert_eq!(g.remove_node(5), false);
 		assert_eq!(g.remove_node(1), true);
 		assert_eq!(g.contains_node(1), false);
