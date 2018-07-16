@@ -224,6 +224,13 @@ pub fn dfs_from_node(g: &mut Graph, v: i32) -> i32 {
 	return algo::dfs_from_node(g, v);
 }
 
+pub fn has_path_connecting(g: &mut Graph, from: i32, to: i32) -> bool {
+	if !g.contains_node(from) || !g.contains_node(to) {
+		return false;
+	}
+	return algo::has_path_connecting(g, from, to);
+}
+
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -324,5 +331,34 @@ mod tests {
 		assert_eq!(g.contains_edge(1, 3), false);
 		assert_eq!(g.contains_edge(3, 1), false);
 		assert_eq!(g.contains_edge(1, 2), false);
+	}
+
+	#[test]
+	fn path_connecting() {
+		let mut g = Graph::new();
+
+		assert_eq!(g.new_node(1), true);
+		assert_eq!(g.new_node(2), true);
+		assert_eq!(g.new_node(3), true);
+		assert_eq!(g.new_node(4), true);
+		assert_eq!(g.new_node(5), true);
+		assert_eq!(g.new_node(6), true);
+
+		assert_eq!(g.add_edge(1, 2, 1.0), true);
+		assert_eq!(g.add_edge(1, 4, 1.0), true);
+		assert_eq!(g.add_edge(2, 4, 1.0), true);
+		assert_eq!(g.add_edge(2, 3, 1.0), true);
+		assert_eq!(g.add_edge(3, 2, 1.0), true);
+		assert_eq!(g.add_edge(3, 5, 1.0), true);
+		assert_eq!(g.add_edge(3, 6, 1.0), true);
+		assert_eq!(g.add_edge(6, 4, 1.0), true);
+
+		assert_eq!(has_path_connecting(&mut g, 1, 2), true);
+		assert_eq!(has_path_connecting(&mut g, 1, 6), true);
+		assert_eq!(has_path_connecting(&mut g, 3, 4), true);
+		assert_eq!(has_path_connecting(&mut g, 6, 2), false);
+		assert_eq!(has_path_connecting(&mut g, 4, 5), false);
+		assert_eq!(has_path_connecting(&mut g, 4, 7), false);
+
 	}
 }

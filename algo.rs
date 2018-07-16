@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use super::Graph;
+use std::collections::VecDeque;
 
 ////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////// DFS //////////////////////////////////////
@@ -45,6 +46,37 @@ pub fn dfs_from_node(g: &mut Graph, v: i32) -> i32 {
 		return visited;
 	}
 	return 0;	
+}
+
+////////////////////////////////////////////////////////////////////////////
+///////////////////////////////// BFS //////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+pub fn has_path_connecting(g: &mut Graph, from: i32, to: i32) -> bool {
+
+	let mut queue: VecDeque<i32> = VecDeque::new();
+	let mut seen: HashSet<i32> = HashSet::new();
+
+	queue.push_front(from);
+	seen.insert(from);
+
+	while !queue.is_empty() {
+        let p: i32 = queue.pop_front().unwrap();
+
+        // stop expanding if reached target point
+        if p == to {
+            return true;
+        }
+
+        for neigh_t in g.node(p).out_neigh() {
+        	if !seen.contains(&neigh_t.0) {
+        		print!("{:?} ", neigh_t.0);
+        		queue.push_back(neigh_t.0);
+        		seen.insert(neigh_t.0);
+        	}
+        } println!();
+    }
+    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////
