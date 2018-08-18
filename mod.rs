@@ -216,8 +216,8 @@ impl Graph {
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
-pub fn dfs(g: &mut Graph) {
-	algo::dfs(g);
+pub fn is_cyclic(g: &mut Graph) -> bool {
+	return algo::is_cyclic(g);
 }
 
 pub fn dfs_from_node(g: &mut Graph, v: i32) -> i32 {
@@ -336,29 +336,52 @@ mod tests {
 	#[test]
 	fn path_connecting() {
 		let mut g = Graph::new();
-
+		assert_eq!(g.new_node(0), true);
 		assert_eq!(g.new_node(1), true);
 		assert_eq!(g.new_node(2), true);
 		assert_eq!(g.new_node(3), true);
 		assert_eq!(g.new_node(4), true);
 		assert_eq!(g.new_node(5), true);
-		assert_eq!(g.new_node(6), true);
-
+		assert_eq!(g.add_edge(0, 1, 1.0), true);
+		assert_eq!(g.add_edge(0, 3, 1.0), true);
+		assert_eq!(g.add_edge(1, 3, 1.0), true);
 		assert_eq!(g.add_edge(1, 2, 1.0), true);
-		assert_eq!(g.add_edge(1, 4, 1.0), true);
+		assert_eq!(g.add_edge(2, 1, 1.0), true);
 		assert_eq!(g.add_edge(2, 4, 1.0), true);
-		assert_eq!(g.add_edge(2, 3, 1.0), true);
+		assert_eq!(g.add_edge(2, 5, 1.0), true);
+		assert_eq!(g.add_edge(5, 3, 1.0), true);
+		assert_eq!(has_path_connecting(&mut g, 0, 1), true);
+		assert_eq!(has_path_connecting(&mut g, 0, 5), true);
+		assert_eq!(has_path_connecting(&mut g, 2, 3), true);
+		assert_eq!(has_path_connecting(&mut g, 5, 2), false);
+		assert_eq!(has_path_connecting(&mut g, 3, 4), false);
+		assert_eq!(has_path_connecting(&mut g, 3, 6), false);
+	}
+
+	#[test]
+	fn is_cyclic_test() {
+
+		let mut g = Graph::new();
+		assert_eq!(g.new_node(0), true);
+		assert_eq!(g.new_node(1), true);
+		assert_eq!(g.new_node(2), true);
+		assert_eq!(g.new_node(3), true);
+		assert_eq!(g.new_node(4), true);
+		assert_eq!(g.new_node(5), true);
+		assert_eq!(g.add_edge(0, 1, 1.0), true);
+		assert_eq!(g.add_edge(0, 3, 1.0), true);
+		assert_eq!(g.add_edge(1, 3, 1.0), true);
+		assert_eq!(g.add_edge(1, 2, 1.0), true);
+		assert_eq!(g.add_edge(2, 1, 1.0), true);
+		assert_eq!(g.add_edge(2, 4, 1.0), true);
+		assert_eq!(g.add_edge(2, 5, 1.0), true);
+		assert_eq!(g.add_edge(5, 3, 1.0), true);
+		assert_eq!(is_cyclic(&mut g), true);
+		assert_eq!(g.remove_edge(2, 1), true);
+		assert_eq!(is_cyclic(&mut g), false);
+		assert_eq!(g.add_edge(4, 0, 1.0), true);
 		assert_eq!(g.add_edge(3, 2, 1.0), true);
-		assert_eq!(g.add_edge(3, 5, 1.0), true);
-		assert_eq!(g.add_edge(3, 6, 1.0), true);
-		assert_eq!(g.add_edge(6, 4, 1.0), true);
-
-		assert_eq!(has_path_connecting(&mut g, 1, 2), true);
-		assert_eq!(has_path_connecting(&mut g, 1, 6), true);
-		assert_eq!(has_path_connecting(&mut g, 3, 4), true);
-		assert_eq!(has_path_connecting(&mut g, 6, 2), false);
-		assert_eq!(has_path_connecting(&mut g, 4, 5), false);
-		assert_eq!(has_path_connecting(&mut g, 4, 7), false);
-
+		assert_eq!(g.remove_edge(1, 2), true);
+		assert_eq!(is_cyclic(&mut g), true);
 	}
 }
